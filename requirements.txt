@@ -1,0 +1,10 @@
+gspread>=6.0.0
+google-auth>=2.27.0
+google-auth-oauthlib>=1.2.0
+pandas>=2.2.0
+anthropic>=0.25.0
+matplotlib>=3.8.0
+fpdf2>=2.7.0
+Jinja2>=3.1.0
+python-dotenv>=1.0.0
+schedule>=1.2.0
