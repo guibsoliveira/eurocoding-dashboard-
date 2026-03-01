@@ -35,8 +35,8 @@ PROJECT_ROOT = Path(__file__).parent
 # ─── CSS customizado ──────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-  /* Remove padding do topo */
-  .block-container { padding-top: 1rem !important; }
+  /* Padding do topo — espaço para não cortar o título */
+  .block-container { padding-top: 2.5rem !important; }
 
   /* Botões de ação grandes */
   .stButton > button {
@@ -175,13 +175,17 @@ if pagina == "🚀 Executar":
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        btn_daily = st.button("☀️ Atualizar\nDiário\n(só Sheets)", key="daily")
+        btn_daily = st.button("☀️ Atualizar Diário", key="daily", use_container_width=True)
+        st.caption("Atualiza o Sheets com KPIs do dia")
     with col2:
-        btn_weekly = st.button("📧 Relatório\nSemanal\n(PDF + E-mail)", key="weekly")
+        btn_weekly = st.button("📧 Relatório Semanal", key="weekly", use_container_width=True)
+        st.caption("Gera PDF + envia e-mail ao diretor")
     with col3:
-        btn_manual = st.button("🧪 Manual\n(Teste)\n(sem e-mail)", key="manual")
+        btn_manual = st.button("🧪 Executar Manual", key="manual", use_container_width=True)
+        st.caption("Tudo completo, sem enviar e-mail")
     with col4:
-        btn_2025 = st.button("📜 Balanço\n2025\n(uma vez)", key="sum2025")
+        btn_2025 = st.button("📜 Balanço 2025", key="sum2025", use_container_width=True)
+        st.caption("Relatório anual completo — rodar uma vez")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
