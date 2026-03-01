@@ -8,7 +8,29 @@ Nenhuma referência a IA ou Claude aparece na saída gerada.
 
 import json
 import anthropic
-from config.settings import ANTHROPIC_API_KEY, CLAUDE_MODEL, COMPANY_NAME, COMPANY_TAGLINE
+from config.settings import (
+    ANTHROPIC_API_KEY, ANTHROPIC_AVAILABLE,
+    CLAUDE_MODEL, COMPANY_NAME, COMPANY_TAGLINE,
+)
+
+
+def _fallback(kpis: dict, periodo: str) -> str:
+    """Texto de substituição quando a chave da API não está configurada."""
+    receita  = kpis.get("receita", 0)
+    lucro    = kpis.get("lucro", 0)
+    margem   = kpis.get("margem_pct", 0)
+    servicos = kpis.get("total_servicos", kpis.get("total_atendimentos", 0))
+
+    def brl(v):
+        return f"R$ {v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+    return (
+        f"Resumo {periodo}: {servicos} serviço(s) realizado(s), "
+        f"receita de {brl(receita)}, lucro de {brl(lucro)} "
+        f"(margem de {margem:.1f}%).\n\n"
+        f"[Análise executiva detalhada indisponível — "
+        f"configure ANTHROPIC_API_KEY no arquivo .env para ativá-la.]"
+    )
 
 
 def _build_weekly_prompt(kpis: dict, alerts: list[dict]) -> str:
@@ -99,38 +121,56 @@ Use R$ formatado. Não mencione ferramentas ou sistemas de análise.
 
 def generate_weekly_analysis(kpis: dict, alerts: list[dict]) -> str:
     """Gera a análise executiva semanal."""
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    prompt = _build_weekly_prompt(kpis, alerts)
-
-    message = client.messages.create(
-        model=CLAUDE_MODEL,
-        max_tokens=1500,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return message.content[0].text.strip()
+    if not ANTHROPIC_AVAILABLE:
+        print("[AVISO] ANTHROPIC_API_KEY não configurada — usando resumo automático.")
+        return _fallback(kpis, "semanal")
+    try:
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        prompt = _build_weekly_prompt(kpis, alerts)
+        message = client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=1500,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return message.content[0].text.strip()
+    except Exception as e:
+        print(f"[AVISO analyst] Falha na análise semanal: {e}")
+        return _fallback(kpis, "semanal")
 
 
 def generate_daily_analysis(kpis: dict) -> str:
     """Gera o resumo executivo diário."""
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    prompt = _build_daily_prompt(kpis)
-
-    message = client.messages.create(
-        model=CLAUDE_MODEL,
-        max_tokens=600,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return message.content[0].text.strip()
+    if not ANTHROPIC_AVAILABLE:
+        print("[AVISO] ANTHROPIC_API_KEY não configurada — usando resumo automático.")
+        return _fallback(kpis, "diário")
+    try:
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        prompt = _build_daily_prompt(kpis)
+        message = client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=600,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return message.content[0].text.strip()
+    except Exception as e:
+        print(f"[AVISO analyst] Falha na análise diária: {e}")
+        return _fallback(kpis, "diário")
 
 
 def generate_annual_analysis(kpis_2025: dict, kpis_2026_partial: dict | None = None) -> str:
     """Gera o balanço anual de 2025."""
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    prompt = _build_annual_prompt(kpis_2025, kpis_2026_partial)
-
-    message = client.messages.create(
-        model=CLAUDE_MODEL,
-        max_tokens=2000,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return message.content[0].text.strip()
+    if not ANTHROPIC_AVAILABLE:
+        print("[AVISO] ANTHROPIC_API_KEY não configurada — usando resumo automático.")
+        return _fallback(kpis_2025, "anual 2025")
+    try:
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        prompt = _build_annual_prompt(kpis_2025, kpis_2026_partial)
+        message = client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=2000,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return message.content[0].text.strip()
+    except Exception as e:
+        print(f"[AVISO analyst] Falha na análise anual: {e}")
+        return _fallback(kpis_2025, "anual 2025")

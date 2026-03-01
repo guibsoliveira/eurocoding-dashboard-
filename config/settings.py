@@ -42,7 +42,13 @@ CLIENTES_COLS = {
 
 # ─── Anthropic / Claude ───────────────────────────────────────────────────────
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-CLAUDE_MODEL = "claude-opus-4-6"
+
+# True somente quando a chave real estiver configurada no .env
+ANTHROPIC_AVAILABLE = bool(
+    ANTHROPIC_API_KEY and ANTHROPIC_API_KEY not in ("", "sk-ant-your-key-here")
+)
+
+CLAUDE_MODEL = "claude-opus-4-5"
 
 # ─── E-mail ───────────────────────────────────────────────────────────────────
 GMAIL_USER = os.getenv("GMAIL_USER", "")
