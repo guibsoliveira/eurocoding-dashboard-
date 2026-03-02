@@ -35,6 +35,32 @@ def _fmt_brl(v: float) -> str:
     return f"R$ {v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
+def _pdf_safe(text: str) -> str:
+    """Converte caracteres Unicode fora do latin-1 para equivalentes ASCII.
+
+    A fonte Helvetica (core font do fpdf2) usa latin-1 (U+0000–U+00FF).
+    Caracteres como en-dash (–), aspas tipográficas (" ") e bullet (•)
+    estão fora desse range e causam FPDFUnicodeEncodingException.
+    """
+    _MAP = {
+        "\u2013": "-",    # en-dash → hífen
+        "\u2014": "--",   # em-dash → duplo hífen
+        "\u2018": "'",    # aspas simples esquerdas
+        "\u2019": "'",    # aspas simples direitas
+        "\u201C": '"',    # aspas duplas esquerdas
+        "\u201D": '"',    # aspas duplas direitas
+        "\u2022": "*",    # bullet
+        "\u2026": "...",  # reticências
+        "\u00b7": ".",    # ponto médio
+        "\u2012": "-",    # figura-dash
+        "\u2015": "--",   # barra horizontal
+    }
+    for orig, repl in _MAP.items():
+        text = text.replace(orig, repl)
+    # Garantia final: qualquer caractere ainda fora do latin-1 vira "?"
+    return text.encode("latin-1", errors="replace").decode("latin-1")
+
+
 # ─── Gráficos ─────────────────────────────────────────────────────────────────
 
 def _chart_daily_revenue(receita_por_dia: dict) -> bytes:
@@ -155,7 +181,7 @@ class _EurocodingPDF(FPDF):
         self.set_font("Helvetica", "B", 9)
         self.set_text_color(255, 255, 255)
         self.set_xy(15, 3)
-        self.cell(0, 6, f"{COMPANY_NAME}  |  {self._title}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.cell(0, 6, _pdf_safe(f"{COMPANY_NAME}  |  {self._title}"), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.set_text_color(0, 0, 0)
         self.ln(8)
 
@@ -202,7 +228,7 @@ class _EurocodingPDF(FPDF):
         self.set_fill_color(*PRIMARY_COLOR)
         self.set_text_color(255, 255, 255)
         self.set_font("Helvetica", "B", 11)
-        self.cell(0, 8, f"  {text}", fill=True,
+        self.cell(0, 8, _pdf_safe(f"  {text}"), fill=True,
                   new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.set_text_color(0, 0, 0)
         self.ln(3)
@@ -248,7 +274,7 @@ class _EurocodingPDF(FPDF):
     def analysis_text(self, text: str):
         self.set_font("Helvetica", "", 10)
         self.set_text_color(50, 50, 50)
-        self.multi_cell(0, 5.5, text)
+        self.multi_cell(0, 5.5, _pdf_safe(text))
         self.ln(4)
 
     def records_table(self, records: list[dict]):
@@ -322,7 +348,7 @@ def generate_weekly_report(
     period = f"{weekly_kpis['periodo_inicio']} a {weekly_kpis['periodo_fim']}"
     week_n = weekly_kpis["semana_iso"]
 
-    pdf = _EurocodingPDF(f"Relatório Semanal – Semana {week_n}")
+    pdf = _EurocodingPDF(f"Relatorio Semanal - Semana {week_n}")
     pdf.cover_page(f"Relatório Semanal", f"Semana {week_n}  ·  {period}")
     pdf.add_page()
 
@@ -414,7 +440,7 @@ def generate_annual_report(annual_kpis: dict, analysis_text: str) -> Path:
 
     # Análise
     pdf.add_page()
-    pdf.section_title(f"Análise Executiva – {year}")
+    pdf.section_title(f"Analise Executiva - {year}")
     pdf.analysis_text(analysis_text)
 
     pdf.output(str(output_path))

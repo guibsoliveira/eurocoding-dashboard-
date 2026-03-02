@@ -58,7 +58,7 @@ Estruture exatamente assim:
 [1 parágrafo breve com observação estratégica sobre o período e próxima semana]
 
 Dados da semana ({kpis.get('periodo_inicio')} a {kpis.get('periodo_fim')}):
-{json.dumps(kpis, ensure_ascii=False, indent=2)}
+{json.dumps(kpis, ensure_ascii=False, indent=2, default=str)}
 {alerts_text}
 
 Importante: use valores em R$ formatados (ex: R$ 1.500,00). Não mencione ferramentas ou sistemas de análise.
@@ -75,7 +75,7 @@ Inclua: total de serviços realizados, receita do dia, margem de lucro.
 Se não houve movimentação, informe isso de forma objetiva.
 
 Dados do dia:
-{json.dumps(kpis, ensure_ascii=False, indent=2)}
+{json.dumps(kpis, ensure_ascii=False, indent=2, default=str)}
 
 Não mencione ferramentas, sistemas ou fontes de análise.
 """
@@ -112,7 +112,7 @@ Tom profissional e estratégico. Estruture assim:
 [2-3 recomendações baseadas nos dados de 2025]
 
 Dados anuais de 2025:
-{json.dumps(kpis_2025, ensure_ascii=False, indent=2)}
+{json.dumps(kpis_2025, ensure_ascii=False, indent=2, default=str)}
 {comparison}
 
 Use R$ formatado. Não mencione ferramentas ou sistemas de análise.
