@@ -146,7 +146,8 @@ def main():
         print("\n[Interrompido pelo usuário]")
         sys.exit(0)
     except Exception as e:
-        print(f"\n[ERRO] {type(e).__name__}: {e}")
+        msg = f"\n[ERRO] {type(e).__name__}: {e}"
+        print(msg.encode("ascii", errors="replace").decode("ascii"))
         raise
 
 

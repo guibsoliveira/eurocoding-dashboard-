@@ -54,6 +54,13 @@ def _pdf_safe(text: str) -> str:
         "\u00b7": ".",    # ponto médio
         "\u2012": "-",    # figura-dash
         "\u2015": "--",   # barra horizontal
+        "\u25b2": "(+)",  # ▲ triângulo para cima (crescimento)
+        "\u25b4": "(+)",  # ▴ triângulo pequeno para cima
+        "\u25bc": "(-)",  # ▼ triângulo para baixo (queda)
+        "\u25be": "(-)",  # ▾ triângulo pequeno para baixo
+        "\u26a0": "(!) ", # ⚠ aviso/alerta
+        "\u2714": "OK",   # ✔ checkmark
+        "\u2718": "X",    # ✘ cross
     }
     for orig, repl in _MAP.items():
         text = text.replace(orig, repl)
@@ -257,7 +264,7 @@ class _EurocodingPDF(FPDF):
                 self.set_font("Helvetica", "", 8)
                 color = (30, 140, 90) if card.get("delta_positive", True) else (200, 40, 40)
                 self.set_text_color(*color)
-                self.cell(card_w - 4, 5, card["delta"], new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+                self.cell(card_w - 4, 5, _pdf_safe(card["delta"]), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.set_y(y + 26)
         self.set_text_color(0, 0, 0)
 
@@ -314,12 +321,12 @@ class _EurocodingPDF(FPDF):
         self.set_draw_color(200, 40, 40)
         self.set_font("Helvetica", "B", 10)
         self.set_text_color(200, 40, 40)
-        self.cell(0, 8, "  ⚠  ALERTAS DE ESTOQUE", fill=True, border=1,
+        self.cell(0, 8, "  (!) ALERTAS DE ESTOQUE", fill=True, border=1,
                   new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.set_font("Helvetica", "", 9)
         self.set_text_color(80, 0, 0)
         for a in alerts:
-            self.cell(0, 6, f"  • {a['item']}  {a.get('obs', '')}",
+            self.cell(0, 6, _pdf_safe(f"  * {a['item']}  {a.get('obs', '')}"),
                       new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.set_text_color(0, 0, 0)
         self.ln(4)
