@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)  # override=True garante que .env prevalece sobre variáveis do sistema
 
 # ─── Google Sheets ───────────────────────────────────────────────────────────
 SHEET_ID = os.getenv("GOOGLE_SHEET_ID", "1VVLzeF4GUyrkSi9KBEYVMdmkRKcZCfRlvLloNO-injA")
